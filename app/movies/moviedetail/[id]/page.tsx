@@ -1,8 +1,8 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Image, Link } from "@heroui/react";
-import noImage from "@/public/No-Image-Placeholder.svg.png"
+import { Image, Link, Skeleton } from "@heroui/react"; // Assuming Skeleton exists
+import noImage from "@/public/No-Image-Placeholder.svg.png";
 
 type Genre = {
   id: number;
@@ -12,7 +12,7 @@ type Genre = {
 type Movie = {
   poster_path?: string;
   title?: string;
-  tagline?:string;
+  tagline?: string;
   overview?: string;
   genres?: Genre[];
   vote_average?: number;
@@ -26,6 +26,7 @@ type Movie = {
 
 export default function MovieDetailPage() {
   const params = useParams();
+  const [loading, setLoading] = useState(true);
   const movieId = Array.isArray(params.id) ? params.id[0] : params.id;
 
   const [movie, setMovie] = useState<Movie>({});
@@ -34,15 +35,48 @@ export default function MovieDetailPage() {
 
   useEffect(() => {
     async function fetchMovieDetail() {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
-      );
-      const json = await response.json();
-      setMovie(json);
-      console.log(json);
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`
+        );
+        const json = await response.json();
+        setMovie(json);
+      } catch (err) {
+        console.error("Failed to fetch movie:", err);
+      } finally {
+        setLoading(false);
+      }
     }
+
     if (movieId) fetchMovieDetail();
   }, [movieId]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl my-10 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-[40%_60%] gap-6">
+          <Skeleton className="w-full h-[450px] rounded-xl" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-24 w-full" />
+            <div className="flex flex-wrap gap-2">
+              {[...Array(4)].map((_, idx) => (
+                <Skeleton key={idx} className="h-8 w-20 rounded" />
+              ))}
+            </div>
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl my-10">

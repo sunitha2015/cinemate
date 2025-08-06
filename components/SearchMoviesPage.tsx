@@ -3,6 +3,7 @@
 import { useFetch } from "@/hooks/useFetch";
 import MovieCard from "@/components/MovieCard";
 import { useSearchParams } from "next/navigation";
+import { SkeletonCard } from "./Skeletoncard";
 type MovieListProps = {
   apiPath: string;
 };
@@ -10,7 +11,7 @@ export default function SearchMoviesPage({ apiPath }: MovieListProps) {
   const searchParams = useSearchParams();
   const queryTerm = searchParams.get("q") || "";
 
-  const { data: movies = [] } = useFetch(apiPath, queryTerm);
+  const { data: movies = [], loading } = useFetch(apiPath, queryTerm);
 
   return (
     <section className="p-4">
@@ -24,9 +25,9 @@ export default function SearchMoviesPage({ apiPath }: MovieListProps) {
             Results for "{queryTerm}"
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {movies.map((movie, index) => (
-              <MovieCard key={index} movie={movie} />
-            ))}
+            {loading
+                      ? Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} />)
+                      : movies.map((movie, index) => <MovieCard key={index} movie={movie} />)}
           </div>
         </div>
       )}
